@@ -27,9 +27,9 @@ class Hupa_Teams_Admin {
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
+	 * @var      string    $basename    The ID of this plugin.
 	 */
-	private string $plugin_name;
+	private string $basename;
 
 	/**
 	 * The version of this plugin.
@@ -58,10 +58,53 @@ class Hupa_Teams_Admin {
 	 */
 	public function __construct(string $plugin_name, string $version,Hupa_Teams $main ) {
 
-		$this->plugin_name = $plugin_name;
+		$this->basename = $plugin_name;
 		$this->version = $version;
         $this->main = $main;
 	}
+
+    /**
+     * Register the Update-Checker for the Plugin.
+     *
+     * @since    1.0.0
+     */
+    public function hupa_teams_update_checker() {
+
+        if(get_option("{$this->basename}_server_api") && get_option($this->basename.'_server_api')->update->update_aktiv) {
+            $postSelectorUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+                get_option("{$this->basename}_server_api")->update->update_url_git,
+                WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $this->basename . DIRECTORY_SEPARATOR . $this->basename . '.php',
+                $this->basename
+            );
+
+            if (get_option("{$this->basename}_server_api")->update->update_type == '1') {
+                if (get_option("{$this->basename}_server_api")->update->update_branch == 'release') {
+                    $postSelectorUpdateChecker->getVcsApi()->enableReleaseAssets();
+                } else {
+                    $postSelectorUpdateChecker->setBranch(get_option("{$this->basename}_server_api")->update->branch_name);
+                }
+            }
+        }
+    }
+
+    public function hupa_teams_show_upgrade_notification( $current_plugin_metadata, $new_plugin_metadata ) {
+
+        /**
+         * Check "upgrade_notice" in readme.txt.
+         *
+         * Eg.:
+         * == Upgrade Notice ==
+         * = 20180624 = <- new version
+         * Notice		<- message
+         *
+         */
+        if ( isset( $new_plugin_metadata->upgrade_notice ) && strlen( trim( $new_plugin_metadata->upgrade_notice ) ) > 0 ) {
+
+            // Display "upgrade_notice".
+            echo sprintf( '<span style="background-color:#d54e21;padding:10px;color:#f9f9f9;margin-top:10px;display:block;"><strong>%1$s: </strong>%2$s</span>', esc_attr( 'Important Upgrade Notice', 'post-selector' ), esc_html( rtrim( $new_plugin_metadata->upgrade_notice ) ) );
+
+        }
+    }
 
 	/**
 	 * Register the stylesheets for the admin area.

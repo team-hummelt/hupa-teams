@@ -4,7 +4,7 @@
  * The plugin bootstrap file
  *
  * This file is read by WordPress to generate the plugin information in the plugin
- * admin area. This file also includes all of the dependencies used by the plugin,
+ * admin area. This file also includes all the dependencies used by the plugin,
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
@@ -13,14 +13,21 @@
  * @package           Hupa_Teams
  *
  * @wordpress-plugin
- * Plugin Name:       WP  Team Members
- * Plugin URI:        https://www.hummelt-werbeagentur.de/
+ * Plugin Name:       WP Team Members
+ * Plugin URI:        https://wwdh.de/plugins
  * Description:       Team Plugin für WordPress
- * Version:           1.0.0
+ * Donate link:       https://wwdh.de/donate
+ * Version:           1.0.1
+ * Stable tag:        1.0.1
+ * Requires PHP:      7.4
+ * Tested up to:      5.9.2
+ * Requires at least: 5.6
  * Author:            Jens Wiecker
  * Author URI:        https://wwdh.de
- * License:           GPL-2.0+
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * License:           GPL3
+ * License URI:       https://www.gnu.org/licenses/gpl-3.0.html
+ * Text Domain:       hupa-teams
+ * Domain Path:       /languages
  */
 
 // If this file is called directly, abort.

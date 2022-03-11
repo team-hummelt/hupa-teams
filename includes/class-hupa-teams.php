@@ -14,6 +14,7 @@
  */
 
 
+use Hupa\License\Register_Product_License;
 use Hupa\TeamMembers\Hupa_Teams_Rest_Endpoint;
 use Hupa\TeamMembers\Register_Teams_Gutenberg_Patterns;
 use Hupa\TeamMembers\Register_Teams_Gutenberg_Tools;
@@ -133,6 +134,7 @@ class Hupa_Teams {
         $this->check_dependencies();
 		$this->load_dependencies();
 		$this->set_locale();
+        $this->define_product_license_class();
         $tempDir = plugin_dir_path(dirname(__FILE__)) . 'admin' . DIRECTORY_SEPARATOR . 'class-gutenberg' . DIRECTORY_SEPARATOR . 'callback-templates';
         $twig_loader = new FilesystemLoader($tempDir);
         $this->twig = new Environment($twig_loader);
@@ -213,11 +215,17 @@ class Hupa_Teams {
          */
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-gutenberg/class_register_teams_gutenberg_patterns.php';
 
+        /**
+         * // JOB The class responsible for defining all actions that occur in the license area.
+         */
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/license/class_register_product_license.php';
+
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-hupa-teams-admin.php';
-
+        if ( is_file( plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-hupa-teams-admin.php' ) ) {
+            require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-hupa-teams-admin.php';
+        }
         /**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
@@ -288,10 +296,27 @@ class Hupa_Teams {
 	private function set_locale() {
 
 		$plugin_i18n = new Hupa_Teams_i18n();
-
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 
 	}
+
+    /**
+     * Register all the hooks related to the admin area functionality
+     * of the plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function define_product_license_class() {
+
+        if(!get_option('hupa_server_url')){
+            update_option('hupa_server_url', $this->get_license_config()->api_server_url);
+        }
+        global $product_license;
+        $product_license = new Register_Product_License( $this->get_plugin_name(), $this->get_version(), $this->get_license_config(), $this->main );
+        $this->loader->add_action( 'init', $product_license, 'license_site_trigger_check' );
+        $this->loader->add_action( 'template_redirect', $product_license, 'license_callback_site_trigger_check' );
+    }
 
     /**
      * Register all the hooks related to the Gutenberg Sidebar functionality
@@ -308,8 +333,6 @@ class Hupa_Teams {
         $this->loader->add_action( 'enqueue_block_editor_assets', $registerGBTools, 'team_members_sidebar_script_enqueue' );
         $this->loader->add_action( 'init', $registerGBTools, 'register_team_members_block_type' );
         $this->loader->add_action( 'enqueue_block_editor_assets', $registerGBTools, 'team_members_block_type_scripts' );
-
-        //
     }
 
     /**
@@ -361,10 +384,8 @@ class Hupa_Teams {
      */
     private function register_hupa_team_members_endpoint() {
         $registerEndpoint = new Hupa_Teams_Rest_Endpoint($this->get_plugin_name(), $this->get_version(), $this->main);
-
         $this->loader->add_action('rest_api_init', $registerEndpoint, 'register_routes');
         $this->loader->add_filter($this->plugin_name.'/get_custom_terms', $registerEndpoint, 'team_members_get_custom_terms');
-
     }
 
 
@@ -377,18 +398,31 @@ class Hupa_Teams {
 	 */
 	private function define_admin_hooks() {
 
-        $postTypes = new Hupa_Teams_Activator();
-        $this->loader->add_action( 'init', $postTypes, 'hupa_register_team_members' );
-        $this->loader->add_action( 'init', $postTypes, 'hupa_register_team_members_taxonomies' );
+        if(!get_option('hupa_teams_user_role')){
+            update_option('hupa_teams_user_role', 'manage_options');
+        }
 
-        $plugin_admin = new Hupa_Teams_Admin( $this->get_plugin_name(), $this->get_version(), $this->main );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+        if ( is_file( plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-hupa-teams-admin.php' ) && get_option( "{$this->plugin_name}_product_install_authorize" ) ) {
+            $postTypes = new Hupa_Teams_Activator();
+            $this->loader->add_action('init', $postTypes, 'hupa_register_team_members');
+            $this->loader->add_action('init', $postTypes, 'hupa_register_team_members_taxonomies');
 
+            $plugin_admin = new Hupa_Teams_Admin($this->get_plugin_name(), $this->get_version(), $this->main);
+
+            //JOB WARNING ADD Plugin Settings Link
+           // $this->loader->add_filter('plugin_action_links_' . $this->plugin_name . '/' . $this->plugin_name . '.php', $plugin_admin, 'experience_reports_plugin_add_action_link');
+
+
+            $this->loader->add_action('init', $plugin_admin, 'hupa_teams_update_checker');
+            $this->loader->add_action('in_plugin_update_message-' . $this->plugin_name . '/' . $this->plugin_name . '.php', $plugin_admin, 'hupa_teams_show_upgrade_notification', 10, 2);
+
+            $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
+            $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
+        }
 	}
 
 	/**
-	 * Register all of the hooks related to the public-facing functionality
+	 * Register all the hooks related to the public-facing functionality
 	 * of the plugin.
 	 *
 	 * @since    1.0.0
@@ -404,7 +438,7 @@ class Hupa_Teams {
 	}
 
 	/**
-	 * Run the loader to execute all of the hooks with WordPress.
+	 * Run the loader to execute all the hooks with WordPress.
 	 *
 	 * @since    1.0.0
 	 */
@@ -454,6 +488,18 @@ class Hupa_Teams {
      */
     public function get_db_version(): string {
         return $this->db_version;
+    }
+
+    /**
+     * License Config for the plugin.
+     *
+     * @return    object License Config.
+     * @since     1.0.0
+     */
+    public function get_license_config():object {
+        $config_file = plugin_dir_path( dirname( __FILE__ ) ) . 'includes/license/config.json';
+
+        return json_decode(file_get_contents($config_file));
     }
 
 }
