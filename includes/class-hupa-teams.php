@@ -20,6 +20,7 @@ use Hupa\TeamMembers\Register_Teams_Gutenberg_Patterns;
 use Hupa\TeamMembers\Register_Teams_Gutenberg_Tools;
 use Hupa\TeamMembers\Render_Callback_Templates;
 use Hupa\TeamMembers\Team_Members_Block_Callback;
+use Hupa\TeamMembers\Wp_Teams_Helper;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -209,6 +210,11 @@ class Hupa_Teams {
          * The class responsible for defining all actions that occur in the admin area.
          */
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-gutenberg/class_register_teams_gutenberg_tools.php';
+
+        /**
+         * The class Helper
+         */
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class_wp_teams_helper.php';
 
         /**
          * The class responsible for defining all Gutenberg Patterns.
@@ -416,10 +422,24 @@ class Hupa_Teams {
             $this->loader->add_action('init', $plugin_admin, 'hupa_teams_update_checker');
             $this->loader->add_action('in_plugin_update_message-' . $this->plugin_name . '/' . $this->plugin_name . '.php', $plugin_admin, 'hupa_teams_show_upgrade_notification', 10, 2);
 
-            $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
-            $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
         }
 	}
+
+    /**
+     * Register all the hooks related to the admin area functionality
+     * of the plugin.
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function register_helper_class() {
+        global $plugin_helper;
+        $plugin_helper = new Wp_Teams_Helper( $this->get_plugin_name(), $this->get_version(), $this->main );
+        $this->loader->add_action( $this->plugin_name.'/get_random_string', $plugin_helper, 'getRandomString' );
+        $this->loader->add_action( $this->plugin_name.'/generate_random_id', $plugin_helper, 'getGenerateRandomId' );
+        $this->loader->add_action( $this->plugin_name.'/array_to_object', $plugin_helper, 'ArrayToObject' );
+        $this->loader->add_action( $this->plugin_name.'/svg_icons', $plugin_helper, 'svg_icons',10,3 );
+    }
 
 	/**
 	 * Register all the hooks related to the public-facing functionality
