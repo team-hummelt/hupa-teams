@@ -1,13 +1,12 @@
-# WP Team Members - Free Version
-hummelt und partner | Werbeagentur GmbH
+# WP Team Members 
 
-### Google-Rezensionen API Free Version
+
 ***
 * Contributors: jwiecker
-* Tags: Hupa Theme, Bootstrap
-* Requires at least: 5.9
-* Tested up to: 5.6
-* Stable tag: 1.0.0
+* Tags: Team,Members, Bootstrap
+* Requires at least: 5.6
+* Tested up to: 5.9.2
+* Stable tag: 1.0.1
 * Requires PHP: 7.4
 * License: MIT License
 
@@ -19,5 +18,8 @@ hummelt und partner | Werbeagentur GmbH
 
 ### Changelog
 
+1.0.1
+* Team Members add Update Function
+
 1.0.0
-* Hupa-Theme release. Included basic plugin features
+* Team Members release. Included basic plugin features

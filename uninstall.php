@@ -29,3 +29,15 @@
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
+
+delete_option( "hupa-teams_show_activated_page");
+delete_option("hupa-teams_message");
+delete_option("hupa-teams_install_authorize");
+delete_option("hupa-teams_client_id");
+delete_option("hupa-teams_client_secret");
+delete_option("hupa-teams_license_url");
+delete_option('hupa-teams_user_role');
+delete_option("hupa-teams_install_time");
+delete_option("hupa-teams_server_api");
+delete_transient("hupa-teams-notice-error-panel-" . get_current_user_id());
+delete_transient("hupa-teams-admin-notice-success-panel-" . get_current_user_id());
