@@ -82,7 +82,7 @@ class Render_Callback_Templates
     public static function render_core_team_members_callback(string $block_content, array $block): string
     {
         if ($block['blockName'] === 'hupa/team-members-block' && !is_admin() && !wp_is_json_request()) {
-            return str_replace('wp-block-columns', '', $block_content);;
+            return str_replace('wp-block-columns', '', $block_content);
         }
         return $block_content;
     }
