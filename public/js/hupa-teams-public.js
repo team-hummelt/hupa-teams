@@ -77,8 +77,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                    let scrollActive = searchOverviewColl.getAttribute('data-scroll');
                    let scrollOffset = searchOverviewColl.getAttribute('data-scrolloffset');
                    let cover = document.querySelector('.cover'+id);
-                   console.log(cover.classList)
-                   console.log(cover)
+
                    if(cover.classList.contains('active')){
                        cover.classList.remove('active');
                    } else {
