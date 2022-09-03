@@ -14,13 +14,15 @@
  */
 
 
-use Hupa\License\Register_Product_License;
 use Hupa\TeamMembers\Hupa_Teams_Rest_Endpoint;
 use Hupa\TeamMembers\Register_Teams_Gutenberg_Patterns;
 use Hupa\TeamMembers\Register_Teams_Gutenberg_Tools;
 use Hupa\TeamMembers\Render_Callback_Templates;
 use Hupa\TeamMembers\Team_Members_Block_Callback;
 use Hupa\TeamMembers\Wp_Teams_Helper;
+
+use HupaTeams\License\Register_Api_WP_Remote;
+use HupaTeams\License\Register_Product_License;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -318,6 +320,9 @@ class Hupa_Teams {
         if(!get_option('hupa_server_url')){
             update_option('hupa_server_url', $this->get_license_config()->api_server_url);
         }
+
+        global $wpRemoteLicense;
+        $wpRemoteLicense = new Register_Api_WP_Remote($this->get_plugin_name(), $this->get_version(), $this->get_license_config(), $this->main);
         global $product_license;
         $product_license = new Register_Product_License( $this->get_plugin_name(), $this->get_version(), $this->get_license_config(), $this->main );
         $this->loader->add_action( 'init', $product_license, 'license_site_trigger_check' );
